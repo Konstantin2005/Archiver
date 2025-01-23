@@ -16,6 +16,6 @@ func Execute() {
 	}
 }
 func handlerError(err error) {
-	_, _ = fmt.Print(os.Stderr, err)
+	_, _ = fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
 }

@@ -4,7 +4,7 @@ import "github.com/spf13/cobra"
 
 var packCmd = &cobra.Command{
 	Use:   "pack",
-	Short: "Pack file",
+	Short: "Pack pack",
 }
 
 func init() {
