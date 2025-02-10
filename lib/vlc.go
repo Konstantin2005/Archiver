@@ -26,6 +26,27 @@ func Encode(str string) string {
 	return ""
 }
 
+func (hcs BinaryChunks) ToString() string {
+	const sep = " "
+
+	switch len(hcs) {
+	case 0:
+
+		return ""
+	case 1:
+		return string(hcs[0])
+	}
+	var duf strings.Builder
+
+	duf.WriteString(string(hcs[0]))
+
+	for _, chunk := range hcs {
+		duf.WriteString(sep)
+		duf.WriteString(string(chunk))
+	}
+	return duf.String()
+}
+
 func (bcs BinaryChunks) ToHex() HexChunks {
 	res := make(HexChunks, 0)
 
