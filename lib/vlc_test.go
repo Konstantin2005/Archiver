@@ -105,15 +105,36 @@ func TestBinaryChunks_ToHex(t *testing.T) {
 	}
 }
 
-func TestBinaryChunks_ToString(t *testing.T) {
+func TestEncode(t *testing.T) {
 	tests := []struct {
 		name string
-		hcs  BinaryChunks
+		args string
 		want string
 	}{
 		{
 			name: "Base Test",
-			hcs:  BinaryChunks{"2F", "80"},
+			args: "My name is Ted",
+			want: "20 30 3C 18 77 4A E4 4D 28",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Encode(tt.args); got != tt.want {
+				t.Errorf("Encode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHexChunks_ToString(t *testing.T) {
+	tests := []struct {
+		name string
+		hcs  HexChunks
+		want string
+	}{
+		{
+			name: "Base Test",
+			hcs:  HexChunks{"2F", "80"},
 			want: "2F 80",
 		},
 	}

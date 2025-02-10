@@ -10,136 +10,94 @@ import (
 
 type BinaryChunks []BinaryChunk
 type BinaryChunk string
-
 type HexChunks []HexChunk
 type HexChunk string
 type encodingTable map[rune]string
 
-const ChunkSize = 8
+const chunksSize = 8
 
 func Encode(str string) string {
-	str = strings.ToLower(str)
-	bSTR := encodeBin(str)
-	chunks := splitByChunks(bSTR, ChunkSize)
-
-	fmt.Println("chunks:", chunks)
-	return ""
+	str = prepareText(str)
+	chunks := splitByChunks(encodeBin(str), chunksSize)
+	return chunks.ToHex().ToString()
 }
-
-func (hcs BinaryChunks) ToString() string {
+func (hcs HexChunks) ToString() string {
 	const sep = " "
-
 	switch len(hcs) {
 	case 0:
-
 		return ""
 	case 1:
 		return string(hcs[0])
 	}
-	var duf strings.Builder
-
-	duf.WriteString(string(hcs[0]))
-
-	for _, chunk := range hcs[1:] {
-		duf.WriteString(sep)
-		duf.WriteString(string(chunk))
+	var buf strings.Builder
+	buf.WriteString(string(hcs[0]))
+	for _, hc := range hcs[1:] {
+		buf.WriteString(sep)
+		buf.WriteString(string(hc))
 	}
-	return duf.String()
+	return buf.String()
 }
-
 func (bcs BinaryChunks) ToHex() HexChunks {
-	res := make(HexChunks, 0)
-
+	res := make(HexChunks, 0, len(bcs))
 	for _, chunk := range bcs {
 		hexChunk := chunk.ToHex()
-
 		res = append(res, hexChunk)
 	}
 	return res
 }
-
 func (bc BinaryChunk) ToHex() HexChunk {
-	num, err := strconv.ParseUint(string(bc), 2, ChunkSize)
+	num, err := strconv.ParseUint(string(bc), 2, chunksSize)
 	if err != nil {
-		panic("cannot convert chunk to hex" + err.Error())
+		panic("can't parse binary chunk: " + err.Error())
 	}
-
 	res := strings.ToUpper(fmt.Sprintf("%x", num))
-
 	if len(res) == 1 {
 		res = "0" + res
 	}
-
 	return HexChunk(res)
-
 }
 
-// prepareText prepare text to be fit for encode :
-// changes upper case : 1 + lower case letter
-// i.g: My name is Ted -> !my name is !Ted
-func prepareText(str string) string {
-	var duf strings.Builder
-	for _, ch := range str {
-		if unicode.IsUpper(ch) {
-			duf.WriteRune('!')
-			duf.WriteRune(unicode.ToLower(ch))
-		} else {
-			duf.WriteRune(ch)
-		}
-	}
-	return duf.String()
-}
-
-// разбивает binary string on binary shanks string with given size,
-// i.g.: '100101010010101010101011' -> '10010101 00101010 10101011'
-func splitByChunks(bStr string, ChunkSize int) BinaryChunks {
-
+// splitByChunks splits binary string by chunks with given size,
+// i.g.: '100101011001010110010101' -> '10010101 10010101 10010101'
+func splitByChunks(bStr string, chunkSize int) BinaryChunks {
 	strLen := utf8.RuneCountInString(bStr)
-
-	ChunksCount := strLen / ChunkSize
-
-	if strLen/ChunksCount != 0 {
-		ChunksCount++
+	chunksCount := strLen / chunkSize
+	if strLen/chunkSize != 0 {
+		chunksCount++
 	}
-	res := make(BinaryChunks, 0, ChunksCount)
-
-	var duf strings.Builder
-
+	res := make(BinaryChunks, 0, chunksCount)
+	var buf strings.Builder
 	for i, ch := range bStr {
-		duf.WriteString(string(ch))
-
-		if (i+1)%ChunkSize == 0 {
-			res = append(res, BinaryChunk(duf.String()))
-			duf.Reset()
+		buf.WriteString(string(ch))
+		if (i+1)%chunkSize == 0 {
+			res = append(res, BinaryChunk(buf.String()))
+			buf.Reset()
 		}
 	}
-	if duf.Len() != 0 {
-		lastChunk := duf.String()
-
-		lastChunk += strings.Repeat("0", ChunkSize-len(lastChunk))
+	if buf.Len() != 0 {
+		lastChunk := buf.String()
+		lastChunk += strings.Repeat("0", chunkSize-len(lastChunk))
 		res = append(res, BinaryChunk(lastChunk))
 	}
 	return res
 }
 
+// encodeBin encodes str into binary codes string without spaces.
 func encodeBin(str string) string {
-	var duf strings.Builder
+	var buf strings.Builder
 	for _, ch := range str {
-		duf.WriteString(bin(ch))
+		buf.WriteString(bin(ch))
 	}
-	return duf.String()
+	return buf.String()
 }
-
 func bin(ch rune) string {
 	table := getEncodingTable()
-
 	res, ok := table[ch]
 	if !ok {
-		panic("unknown character %c" + string(ch))
+		panic("unknown character: " + string(ch))
 	}
 	return res
 }
-
 func getEncodingTable() encodingTable {
 	return encodingTable{
 		' ': "11",
@@ -171,4 +129,21 @@ func getEncodingTable() encodingTable {
 		'x': "00000000001",
 		'z': "000000000000",
 	}
+}
+
+// prepareText prepares text to be fit for encode:
+// changes upper case letters to: ! + lower case letter
+//
+//	i.g.: My name is Ted -> !my name is !ted
+func prepareText(str string) string {
+	var buf strings.Builder
+	for _, ch := range str {
+		if unicode.IsUpper(ch) {
+			buf.WriteRune('!')
+			buf.WriteRune(unicode.ToLower(ch))
+		} else {
+			buf.WriteRune(ch)
+		}
+	}
+	return buf.String()
 }

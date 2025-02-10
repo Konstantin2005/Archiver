@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"archiver/lib"
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -11,7 +12,7 @@ import (
 )
 
 var vlcCmd = &cobra.Command{
-	Use:   "Vlc",
+	Use:   "vlc",
 	Short: "Pack vlc",
 	Run:   pack,
 }
@@ -34,7 +35,7 @@ func pack(_ *cobra.Command, args []string) {
 		handlerError(err)
 	}
 
-	packed := ""
+	packed := lib.Encode(string(data))
 
 	fmt.Println(string(data))
 
