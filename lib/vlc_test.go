@@ -83,3 +83,24 @@ func Test_splitByChunks(t *testing.T) {
 		})
 	}
 }
+
+func TestBinaryChunks_ToHex(t *testing.T) {
+	tests := []struct {
+		name string
+		bcs  BinaryChunks
+		want HexChunks
+	}{
+		{
+			name: "Base Test",
+			bcs:  BinaryChunks{"0101111", "10000000"},
+			want: HexChunks{"2F", "80"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.bcs.ToHex(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ToHex() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

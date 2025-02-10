@@ -2,10 +2,20 @@ package lib
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 )
+
+type BinaryChunks []BinaryChunk
+type BinaryChunk string
+
+type HexChunks []HexChunk
+type HexChunk string
+type encodingTable map[rune]string
+
+const ChunkSize = 8
 
 func Encode(str string) string {
 	str = strings.ToLower(str)
@@ -16,11 +26,32 @@ func Encode(str string) string {
 	return ""
 }
 
-const ChunkSize = 8
+func (bcs BinaryChunks) ToHex() HexChunks {
+	res := make(HexChunks, 0)
 
-type BinaryChunks []BinaryChunk
-type BinaryChunk string
-type encodingTable map[rune]string
+	for _, chunk := range bcs {
+		hexChunk := chunk.ToHex()
+
+		res = append(res, hexChunk)
+	}
+	return res
+}
+
+func (bc BinaryChunk) ToHex() HexChunk {
+	num, err := strconv.ParseUint(string(bc), 2, ChunkSize)
+	if err != nil {
+		panic("cannot convert chunk to hex" + err.Error())
+	}
+
+	res := strings.ToUpper(fmt.Sprintf("%x", num))
+
+	if len(res) == 1 {
+		res = "0" + res
+	}
+
+	return HexChunk(res)
+
+}
 
 // prepareText prepare text to be fit for encode :
 // changes upper case : 1 + lower case letter
@@ -41,8 +72,11 @@ func prepareText(str string) string {
 // разбивает binary string on binary shanks string with given size,
 // i.g.: '100101010010101010101011' -> '10010101 00101010 10101011'
 func splitByChunks(bStr string, ChunkSize int) BinaryChunks {
+
 	strLen := utf8.RuneCountInString(bStr)
+
 	ChunksCount := strLen / ChunkSize
+
 	if strLen/ChunksCount != 0 {
 		ChunksCount++
 	}
