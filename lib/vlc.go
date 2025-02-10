@@ -40,7 +40,7 @@ func (hcs BinaryChunks) ToString() string {
 
 	duf.WriteString(string(hcs[0]))
 
-	for _, chunk := range hcs {
+	for _, chunk := range hcs[1:] {
 		duf.WriteString(sep)
 		duf.WriteString(string(chunk))
 	}

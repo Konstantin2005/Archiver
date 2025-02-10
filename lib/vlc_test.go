@@ -104,3 +104,24 @@ func TestBinaryChunks_ToHex(t *testing.T) {
 		})
 	}
 }
+
+func TestBinaryChunks_ToString(t *testing.T) {
+	tests := []struct {
+		name string
+		hcs  BinaryChunks
+		want string
+	}{
+		{
+			name: "Base Test",
+			hcs:  BinaryChunks{"2F", "80"},
+			want: "2F 80",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.hcs.ToString(); got != tt.want {
+				t.Errorf("ToString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
